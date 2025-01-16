@@ -149,11 +149,14 @@ export function Form() {
 
 export function PdfViewer() {
   const [pdf] = useAtom(pdfAtom);
+  const _arrayBuffer = pdf as ArrayBuffer;
 
   if (!pdf) return null;
   return (
     <iframe
-      src={`data:application/pdf;base64,${Buffer.from(pdf).toString('base64')}`}
+      src={`data:application/pdf;base64,${Buffer.from(_arrayBuffer).toString(
+        'base64'
+      )}`}
       className='w-full h-full'
     />
   );
