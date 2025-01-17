@@ -4881,7 +4881,7 @@ __metadata:
     postcss: "npm:^8"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
-    scribe.js-ocr: "npm:^0.7.0"
+    scribe.js-ocr: "patch:scribe.js-ocr@npm%3A0.7.0#~/.yarn/patches/scribe.js-ocr-npm-0.7.0-1ff50d17e5.patch"
     tailwind-merge: "npm:^2.6.0"
     tailwindcss: "npm:^3.4.1"
     tailwindcss-animate: "npm:^1.0.7"
@@ -5421,7 +5421,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"scribe.js-ocr@npm:^0.7.0":
+"scribe.js-ocr@npm:0.7.0":
   version: 0.7.0
   resolution: "scribe.js-ocr@npm:0.7.0"
   dependencies:
@@ -5429,6 +5429,17 @@ __metadata:
     canvaskit-wasm: "npm:^0.39.1"
     commander: "npm:^11.1.0"
   checksum: 10c0/de9c8214f00673065e56e5dc00996cdb494ed8ec9541ad1f8e1fbe416e9339c06d65f29337e4cb96c581131ece29e9c68272dd434f1e019c7c627bef27438afd
+  languageName: node
+  linkType: hard
+
+"scribe.js-ocr@patch:scribe.js-ocr@npm%3A0.7.0#~/.yarn/patches/scribe.js-ocr-npm-0.7.0-1ff50d17e5.patch":
+  version: 0.7.0
+  resolution: "scribe.js-ocr@patch:scribe.js-ocr@npm%3A0.7.0#~/.yarn/patches/scribe.js-ocr-npm-0.7.0-1ff50d17e5.patch::version=0.7.0&hash=05c48a"
+  dependencies:
+    "@scribe.js/tesseract.js": "npm:^6.0.2"
+    canvaskit-wasm: "npm:^0.39.1"
+    commander: "npm:^11.1.0"
+  checksum: 10c0/cbfa3d91472d6e67a6a9950e638ecb842620e7f858fdcf8555050928f9021efa5e3f3f2d15aa62987dd37f8df3b8b933d80071bfe41dd605f7df33985175da1e
   languageName: node
   linkType: hard
 

@@ -1,15 +1,5 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
-  reactStrictMode: true,
-  webpack: (config, { webpack }) => {
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        process: 'undefined',
-      })
-    );
-    return config;
-  },
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

@@ -23,7 +23,7 @@
     "pdfkit": "^0.16.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "scribe.js-ocr": "^0.7.0",
+    "scribe.js-ocr": "patch:scribe.js-ocr@npm%3A0.7.0#~/.yarn/patches/scribe.js-ocr-npm-0.7.0-1ff50d17e5.patch",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.1"
