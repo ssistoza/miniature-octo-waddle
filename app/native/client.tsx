@@ -91,19 +91,20 @@ class PdfAppStore {
     if (!this.ocrPages) throw new Error('No ocr pages loaded');
     if (position < 0) throw new Error('Invalid position');
     const pdfDoc = await PDFDocument.load(this.original);
-
     const paragraphGenerator = this.forEachDocumentChunk();
 
-    const index = 0;
     let selected: OcrPar | null = null;
+    let lastPosition = 0;
     for (const paragraph of paragraphGenerator()) {
-      const maxCursor = index + paragraph.textContent.length;
+      const maxCursor = lastPosition + paragraph.textContent.length;
 
-      if (position > maxCursor) {
+      if (position < maxCursor) {
+        selected = paragraph;
         // found the paragraph. break the loop
         break;
       }
-      selected = paragraph;
+
+      lastPosition = maxCursor;
     }
 
     if (!selected) return;
@@ -140,13 +141,15 @@ class PdfAppStore {
     return function* () {
       for (const page of pages) {
         for (const paragraph of page.pars) {
+          const textContent = paragraph.lines
+            .map((ocrPara) => {
+              return ocrPara.words.map((word) => word.text).join(' ');
+            })
+            .join(' ');
+
           yield {
             ...paragraph,
-            textContent: paragraph.lines
-              .map((ocrPara) => {
-                return ocrPara.words.map((word) => word.text).join(' ');
-              })
-              .join(' '),
+            textContent,
           };
         }
       }
@@ -168,6 +171,19 @@ class PdfAppStore {
 }
 
 export const pdfStore = proxy(new PdfAppStore());
+subscribe(pdfStore, () => {
+  console.group('PdfStore');
+  console.log('Ocred Pages', pdfStore.ocrPages?.length);
+
+  const paragraphs = pdfStore.forEachDocumentChunk()();
+
+  for (const paragraph of paragraphs) {
+    console.log('Page', paragraph.page.n);
+    console.log('Paragraph Text Length', paragraph.textContent.length);
+  }
+
+  console.groupEnd();
+});
 const handleSearchTerm = debounce(pdfStore.searchPdfByPhrase, 500);
 
 function LoadPdfField({ onChange }: { onChange: (pdf: ArrayBuffer) => void }) {
