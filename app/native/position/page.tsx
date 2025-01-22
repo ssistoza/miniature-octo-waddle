@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Form, PdfViewer, SearchPdfField } from './client';
+import { Form, SearchPdfField, PdfViewer } from '../client';
 
 export default function Page() {
   return (

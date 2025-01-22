@@ -4886,6 +4886,7 @@ __metadata:
     tailwindcss: "npm:^3.4.1"
     tailwindcss-animate: "npm:^1.0.7"
     typescript: "npm:^5"
+    valtio: "npm:^2.1.2"
     vercel: "npm:^39.3.0"
     zod: "npm:^3.24.1"
   languageName: unknown
@@ -5119,6 +5120,13 @@ __metadata:
     object-assign: "npm:^4.1.1"
     react-is: "npm:^16.13.1"
   checksum: 10c0/59ece7ca2fb9838031d73a48d4becb9a7cc1ed10e610517c7d8f19a1e02fa47f7c27d557d8a5702bec3cfeccddc853579832b43f449e54635803f277b1c78077
+  languageName: node
+  linkType: hard
+
+"proxy-compare@npm:^3.0.0":
+  version: 3.0.1
+  resolution: "proxy-compare@npm:3.0.1"
+  checksum: 10c0/1e3631ef32603d4de263860ce02d84b48384dce9b62238b2148b3c58a4e4ec5b06644615dcc196a339f73b9695443317099d55a9173e02ce8492088c9330c00b
   languageName: node
   linkType: hard
 
@@ -6449,6 +6457,23 @@ __metadata:
   version: 3.0.1
   resolution: "v8-compile-cache-lib@npm:3.0.1"
   checksum: 10c0/bdc36fb8095d3b41df197f5fb6f11e3a26adf4059df3213e3baa93810d8f0cc76f9a74aaefc18b73e91fe7e19154ed6f134eda6fded2e0f1c8d2272ed2d2d391
+  languageName: node
+  linkType: hard
+
+"valtio@npm:^2.1.2":
+  version: 2.1.2
+  resolution: "valtio@npm:2.1.2"
+  dependencies:
+    proxy-compare: "npm:^3.0.0"
+  peerDependencies:
+    "@types/react": ">=18.0.0"
+    react: ">=18.0.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    react:
+      optional: true
+  checksum: 10c0/b13fbb8c820ebfb854a6a6fa3d8becbb12b101db0ca23dff8549878e47638a8fe8ac772e8074d85eaf6f103d07469155b0fabecb3ed86aae4174201dd87e48ca
   languageName: node
   linkType: hard
 
