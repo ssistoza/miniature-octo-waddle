@@ -9,7 +9,7 @@ import { VisibilityControl } from '@/components/ui/visibility-control';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { ChangeEvent, useState } from 'react';
 import { debounce } from 'lodash';
-import { proxy, subscribe, useSnapshot } from 'valtio';
+import { proxy, useSnapshot } from 'valtio';
 
 class PdfAppStore {
   ocrPages?: Array<OcrPage>;
@@ -171,19 +171,7 @@ class PdfAppStore {
 }
 
 export const pdfStore = proxy(new PdfAppStore());
-subscribe(pdfStore, () => {
-  console.group('PdfStore');
-  console.log('Ocred Pages', pdfStore.ocrPages?.length);
 
-  const paragraphs = pdfStore.forEachDocumentChunk()();
-
-  for (const paragraph of paragraphs) {
-    console.log('Page', paragraph.page.n);
-    console.log('Paragraph Text Length', paragraph.textContent.length);
-  }
-
-  console.groupEnd();
-});
 const handleSearchTerm = debounce(pdfStore.searchPdfByPhrase, 500);
 
 function LoadPdfField({ onChange }: { onChange: (pdf: ArrayBuffer) => void }) {
