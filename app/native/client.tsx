@@ -9,7 +9,7 @@ import { VisibilityControl } from '@/components/ui/visibility-control';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { ChangeEvent, useState } from 'react';
 import { debounce } from 'lodash';
-import { proxy, useSnapshot } from 'valtio';
+import { proxy, subscribe, useSnapshot } from 'valtio';
 
 class PdfAppStore {
   ocrPages?: Array<OcrPage>;
@@ -19,7 +19,6 @@ class PdfAppStore {
 
   async loadPdf(buffer: ArrayBuffer) {
     this.original = buffer;
-    this.public = buffer;
     this.status = 'ocr-preprocessing';
     await scribe.init();
     await scribe.importFiles({ pdfFiles: [buffer] });
@@ -153,9 +152,22 @@ class PdfAppStore {
       }
     };
   };
+
+  get maxPosition() {
+    if (!this.ocrPages) return 0;
+    const paragraphs = this.forEachDocumentChunk()();
+    if (!paragraphs) return 0;
+
+    let position = 0;
+    for (const paragraph of paragraphs) {
+      position += paragraph.textContent.length;
+    }
+
+    return position;
+  }
 }
 
-const pdfStore = proxy(new PdfAppStore());
+export const pdfStore = proxy(new PdfAppStore());
 const handleSearchTerm = debounce(pdfStore.searchPdfByPhrase, 500);
 
 function LoadPdfField({ onChange }: { onChange: (pdf: ArrayBuffer) => void }) {
