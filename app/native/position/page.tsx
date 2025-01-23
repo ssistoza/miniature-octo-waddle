@@ -5,7 +5,7 @@ import { CursorSelectionField } from './client';
 export default function Page() {
   return (
     <main className='grid grid-cols-5 grid-rows-8 gap-0 h-screen'>
-      <form className='place-content-center row-span-1 col-span-5 flex'>
+      <form className='place-content-center row-span-1 col-span-5'>
         <Form>
           <CursorSelectionField />
         </Form>

@@ -9,20 +9,41 @@ import { VisibilityControl } from '@/components/ui/visibility-control';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { ChangeEvent, useState } from 'react';
 import { debounce } from 'lodash';
-import { proxy, useSnapshot } from 'valtio';
+import { proxy, subscribe, useSnapshot } from 'valtio';
+import memoize from 'memoizee';
+
+export const memoedRecognize = memoize(
+  (_buf: ArrayBuffer) => scribe.recognize(),
+  {
+    promise: true,
+    max: 4,
+    maxAge: 1000 * 60 * 5,
+    normalizer(args) {
+      return new TextDecoder().decode(args[0]);
+    },
+  }
+);
 
 class PdfAppStore {
-  ocrPages?: Array<OcrPage>;
+  ocrPages: Array<OcrPage> = [];
   original?: ArrayBuffer;
   public?: ArrayBufferLike;
   status: 'idle' | 'ocr-preprocessing' | 'ready' = 'idle';
 
+  constructor() {
+    scribe.init();
+  }
+
   async loadPdf(buffer: ArrayBuffer) {
     this.original = buffer;
     this.status = 'ocr-preprocessing';
-    await scribe.init();
+    console.group('PdfStore_loadPdf');
+    console.time('loadPdf');
     await scribe.importFiles({ pdfFiles: [buffer] });
-    this.ocrPages = await scribe.recognize();
+    const results = await memoedRecognize(buffer);
+    console.timeEnd('loadPdf');
+    console.groupEnd();
+    this.ocrPages.splice(0, this.ocrPages.length, ...results);
     this.status = 'ready';
   }
 
@@ -172,11 +193,32 @@ class PdfAppStore {
 
 export const pdfStore = proxy(new PdfAppStore());
 
-const handleSearchTerm = debounce(pdfStore.searchPdfByPhrase, 500);
+subscribe(pdfStore.ocrPages, () => {
+  if (!pdfStore.ocrPages) return;
+  console.group('PdfStore_subscribe');
+
+  let position = 0;
+  const paragraphs = pdfStore.forEachDocumentChunk()();
+
+  for (const paragraph of paragraphs) {
+    const endPosition = position + paragraph.textContent.length;
+    console.log(
+      `Page ${paragraph.page.n + 1}, Position: ${position} - ${endPosition}`
+    );
+    position = endPosition;
+  }
+
+  console.groupEnd();
+});
+
+const handleSearchTerm = debounce(
+  (phrase: string) => pdfStore.searchPdfByPhrase(phrase),
+  500
+);
 
 function LoadPdfField({ onChange }: { onChange: (pdf: ArrayBuffer) => void }) {
   return (
-    <>
+    <div className='flex flex-col gap-y-2'>
       <Label htmlFor='pdf'>Load a pdf</Label>
       <Input
         id='pdf'
@@ -187,49 +229,47 @@ function LoadPdfField({ onChange }: { onChange: (pdf: ArrayBuffer) => void }) {
           onChange(await file.arrayBuffer());
         }}
       />
-    </>
+    </div>
   );
 }
 
 export function SearchPdfField() {
   const [searchTerm, setSearchTerm] = useState('');
   const store = useSnapshot(pdfStore);
-  const isLoading = store.status === 'ocr-preprocessing';
   const handleTextChange = (evt: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(evt.target.value);
     handleSearchTerm(evt.target.value);
   };
 
-  if (isLoading) {
-    return <Skeleton className='h-4 w-full' />;
-  }
-
   return (
-    <>
-      <Label htmlFor='search'>Search</Label>
-      <Input
-        id='search'
-        type='text'
-        value={searchTerm}
-        onChange={handleTextChange}
-      />
-    </>
+    <div className='flex flex-1 flex-col gap-y-2'>
+      <VisibilityControl
+        className='flex flex-col gap-2'
+        visible={store.status === 'ocr-preprocessing'}
+      >
+        <Skeleton className='h-4 w-full' />
+        <Skeleton className='h-4 w-full' />
+      </VisibilityControl>
+      <VisibilityControl visible={store.status === 'ready'}>
+        <Label htmlFor='search'>Search</Label>
+        <Input
+          id='search'
+          type='text'
+          value={searchTerm}
+          onChange={handleTextChange}
+        />
+      </VisibilityControl>
+    </div>
   );
 }
 
 export function Form({ children }: { children: React.ReactNode }) {
-  const store = useSnapshot(pdfStore);
-  const pdfLoaded = Boolean(store.original);
-
-  const handleExtraction = async (buffer: ArrayBuffer) =>
-    pdfStore.loadPdf(buffer);
+  const handleExtraction = (buffer: ArrayBuffer) => pdfStore.loadPdf(buffer);
 
   return (
-    <div className='grid w-full max-w-sm items-center gap-1.5'>
-      <VisibilityControl visible={!pdfLoaded}>
-        <LoadPdfField onChange={handleExtraction} />
-      </VisibilityControl>
-      <VisibilityControl visible={pdfLoaded}>{children}</VisibilityControl>
+    <div className='flex gap-4 justify-between px-5 items-center'>
+      <LoadPdfField onChange={handleExtraction} />
+      {children}
     </div>
   );
 }
