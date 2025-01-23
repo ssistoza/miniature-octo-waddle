@@ -13,6 +13,8 @@ import { proxy, subscribe, useSnapshot } from 'valtio';
 import memoize from 'memoizee';
 
 export const memoedRecognize = memoize(
+  // Its important to add _buf as the first argument to normalize the arguments and memoize it.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   (_buf: ArrayBuffer) => scribe.recognize(),
   {
     promise: true,
