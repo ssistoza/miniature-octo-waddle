@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "dlx vercel deploy",
-    "deploy:prod": "dlx vercel deploy --prod"
+    "deploy": "vercel deploy",
+    "deploy:prod": "vercel deploy --prod"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.1",
