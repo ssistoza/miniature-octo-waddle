@@ -7,10 +7,12 @@ import scribe, { type OcrPage, type OcrPar } from 'scribe.js-ocr';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VisibilityControl } from '@/components/ui/visibility-control';
 import { PDFDocument, rgb } from 'pdf-lib';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { debounce } from 'lodash';
 import { proxy, subscribe, useSnapshot } from 'valtio';
 import memoize from 'memoizee';
+import { hash } from 'ohash';
+import { interval } from 'rxjs';
 
 export const memoedRecognize = memoize(
   // Its important to add _buf as the first argument to normalize the arguments and memoize it.
@@ -21,7 +23,7 @@ export const memoedRecognize = memoize(
     max: 4,
     maxAge: 1000 * 60 * 5,
     normalizer(args) {
-      return new TextDecoder().decode(args[0]);
+      return hash(args[0]);
     },
   }
 );
@@ -31,18 +33,23 @@ class PdfAppStore {
   original?: ArrayBuffer;
   public?: ArrayBufferLike;
   status: 'idle' | 'ocr-preprocessing' | 'ready' = 'idle';
+  durationMs: number = 0;
 
   constructor() {
-    scribe.init();
+    console.log('PdfStore_constructor');
   }
 
   async loadPdf(buffer: ArrayBuffer) {
     this.original = buffer;
     this.status = 'ocr-preprocessing';
-    console.group('PdfStore_loadPdf');
+    console.group(['PdfStore_loadPdf', hash(buffer)].join('_'));
     console.time('loadPdf');
+    const start = Date.now();
+    await scribe.init();
     await scribe.importFiles({ pdfFiles: [buffer] });
     const results = await memoedRecognize(buffer);
+    const end = Date.now();
+    this.durationMs = end - start;
     console.timeEnd('loadPdf');
     console.groupEnd();
     this.ocrPages.splice(0, this.ocrPages.length, ...results);
@@ -266,11 +273,13 @@ export function SearchPdfField() {
 }
 
 export function Form({ children }: { children: React.ReactNode }) {
+  const snap = useSnapshot(pdfStore);
   const handleExtraction = (buffer: ArrayBuffer) => pdfStore.loadPdf(buffer);
 
   return (
     <div className='flex gap-4 justify-between px-5 items-center'>
       <LoadPdfField onChange={handleExtraction} />
+      <OcrTimer key={hash(snap.original)} />
       {children}
     </div>
   );
@@ -287,4 +296,35 @@ export function PdfViewer() {
     Buffer.from(buffer).toString('base64'),
   ].join('');
   return <iframe src={source} className='w-full h-full' />;
+}
+
+export function OcrTimer() {
+  const [ms, setMs] = useState(0);
+  const snap = useSnapshot(pdfStore);
+  const isProcessing = snap.status === 'ocr-preprocessing';
+
+  useEffect(() => {
+    if (!isProcessing) return;
+
+    const everyHundredMs$ = interval(100);
+    const subscription = everyHundredMs$.subscribe((index) => {
+      setMs(index * 100);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [isProcessing]);
+
+  return (
+    <div className='relative'>
+      <div className='inline-flex flex-col items-center justify-center rounded-full bg-gray-800 text-white p-2 w-14 h-14'>
+        <span className='font-semibold'>{(ms / 1000).toFixed(1)}s</span>
+      </div>
+      <div
+        data-processing={isProcessing}
+        className='absolute data-[processing=true]:animate-spin top-0 w-14 h-14 rounded-full border-t-4 border-teal-400'
+      ></div>
+    </div>
+  );
 }
