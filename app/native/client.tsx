@@ -274,7 +274,10 @@ export function SearchPdfField() {
 
 export function Form({ children }: { children: React.ReactNode }) {
   const snap = useSnapshot(pdfStore);
-  const handleExtraction = (buffer: ArrayBuffer) => pdfStore.loadPdf(buffer);
+  const handleExtraction = async (buffer: ArrayBuffer) => {
+    delete pdfStore.public;
+    await pdfStore.loadPdf(buffer);
+  };
 
   return (
     <div className='flex gap-4 justify-between px-5 items-center'>
