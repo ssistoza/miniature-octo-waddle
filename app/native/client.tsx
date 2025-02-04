@@ -45,14 +45,19 @@ class PdfAppStore {
     console.group(['PdfStore_loadPdf', hash(buffer)].join('_'));
     console.time('loadPdf');
     const start = Date.now();
-    await scribe.init();
-    await scribe.importFiles({ pdfFiles: [buffer] });
-    const results = await memoedRecognize(buffer);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    await scribe.extractText({ pdfFiles: [buffer] }, ['eng']);
+    // await scribe.init();
+    // await scribe.importFiles({ pdfFiles: [buffer] });
+    // const results = await memoedRecognize(buffer);
     const end = Date.now();
     this.durationMs = end - start;
     console.timeEnd('loadPdf');
     console.groupEnd();
-    this.ocrPages.splice(0, this.ocrPages.length, ...results);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    this.ocrPages.splice(0, this.ocrPages.length, ...scribe.data.ocr.active);
     this.status = 'ready';
   }
 
